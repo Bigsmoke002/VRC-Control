@@ -1,0 +1,6 @@
+node_modules/
+credentials.json
+instances_config.json
+backups/
+*.log
+.env

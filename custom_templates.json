@@ -1,0 +1,9 @@
+{
+  "Example": {
+    "name": "Example",
+    "content": "~Instance-Bot~\nHello from the instance bot!",
+    "description": "Example template",
+    "created": "2025-07-05T16:01:21.842Z",
+    "type": "custom"
+  }
+}

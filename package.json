@@ -1,0 +1,19 @@
+{
+    "name": "vrc-control",
+    "version": "2.0.0",
+    "description": "Discord bot addon + web dashboard to run and control multiple VRChat client instances (archived test project)",
+    "main": "cmd_vrchatcontrol.js",
+    "scripts": {
+        "setup": "node setup.js",
+        "web": "node web_server.js"
+    },
+    "dependencies": {
+        "bcrypt": "^6.0.0",
+        "discord.js": "^14.14.1",
+        "express": "^4.18.2",
+        "express-session": "^1.17.3",
+        "ws": "^8.14.2"
+    },
+    "author": "Bigsmoke002",
+    "license": "MIT"
+}

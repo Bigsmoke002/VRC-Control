@@ -1,0 +1,29 @@
+{
+  "host": "127.0.0.1",
+  "port": 4545,
+  "discordChannelId": "",
+  "adminRoleId": "",
+  "maxBots": 5,
+  "launchExePaths": {
+    "bot1": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\launch.exe",
+    "bot2": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\launch.exe",
+    "bot3": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\launch.exe",
+    "bot4": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\launch.exe",
+    "bot5": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\launch.exe"
+  },
+  "startupDelay": 15000,
+  "worldPresets": {
+    "Hub": "wrld_8b9b2990-7313-4430-9294-5e482036b483",
+    "Hangout Spot": "wrld_4cf554b4-430c-4f8f-b53e-1f294eed230b"
+  },
+  "osc": {
+    "enabled": true,
+    "inPort": 9001,
+    "outPort": 9000,
+    "host": "127.0.0.1",
+    "rateLimit": {
+      "chatbox": 1500,
+      "parameters": 50
+    }
+  }
+}

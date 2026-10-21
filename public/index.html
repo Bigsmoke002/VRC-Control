@@ -1,0 +1,2225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRChat Control Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f0f 100%);
+        }
+
+        .login-box {
+            background: rgba(30, 30, 40, 0.9);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .login-box h2 {
+            color: #8a2be2;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #b0b0b0;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(50, 50, 60, 0.8);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 5px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            resize: vertical;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #8a2be2;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .form-group select option {
+            background: rgba(30, 30, 40, 1);
+            color: #e0e0e0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #8a2be2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #7a1fd2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .dashboard {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(30, 30, 40, 0.8);
+            border-bottom: 2px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .header h1 {
+            color: #8a2be2;
+            font-size: 1.8rem;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            background: rgba(20, 20, 30, 0.9);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #b0b0b0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: rgba(138, 43, 226, 0.1);
+            color: #e0e0e0;
+        }
+
+        .tab.active {
+            color: #8a2be2;
+            border-bottom-color: #8a2be2;
+            background: rgba(138, 43, 226, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Bot Control Tab */
+        .system-stats {
+            background: rgba(30, 30, 40, 0.8);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(138, 43, 226, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            background: rgba(50, 50, 60, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+
+        .stat-label {
+            color: #b0b0b0;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            color: #8a2be2;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .instances-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .instance-card {
+            background: rgba(30, 30, 40, 0.8);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .instance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2);
+        }
+
+        .instance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .instance-name {
+            font-size: 1.25rem;
+            color: #8a2be2;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 0.5rem;
+        }
+
+        .status-running {
+            background: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .status-stopped {
+            background: #dc3545;
+        }
+
+        .status-error {
+            background: #ff6b35;
+            animation: pulse 1s infinite;
+        }
+
+        .status-unknown {
+            background: #ffc107;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .instance-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            background: rgba(50, 50, 60, 0.5);
+            padding: 0.75rem;
+            border-radius: 5px;
+            font-size: 0.875rem;
+        }
+
+        .info-label {
+            color: #b0b0b0;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .world-selection {
+            margin-bottom: 1rem;
+        }
+
+        .world-preset-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .world-preset-select {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(50, 50, 60, 0.8);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 5px;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+        }
+
+        .world-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .world-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(50, 50, 60, 0.8);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 5px;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .btn-start {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-stop {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background: #c82333;
+        }
+
+        .btn-save {
+            width: auto;
+            padding: 0.5rem 1rem;
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #5a6268;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* OSC Tab Styles */
+        .osc-section {
+            background: rgba(30, 30, 40, 0.8);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(138, 43, 226, 0.2);
+        }
+
+        .osc-section h3 {
+            color: #8a2be2;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .osc-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .osc-control-group {
+            background: rgba(50, 50, 60, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+
+        .osc-control-group h4 {
+            color: #e0e0e0;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .osc-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .osc-input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: end;
+        }
+
+        .osc-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(40, 40, 50, 0.8);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 5px;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+        }
+
+        .osc-btn {
+            padding: 0.5rem 1rem;
+            background: #8a2be2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .osc-btn:hover {
+            background: #7a1fd2;
+        }
+
+        .osc-btn.danger {
+            background: #dc3545;
+        }
+
+        .osc-btn.danger:hover {
+            background: #c82333;
+        }
+
+        .osc-btn.success {
+            background: #28a745;
+        }
+
+        .osc-btn.success:hover {
+            background: #218838;
+        }
+
+        .osc-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(40, 40, 50, 0.6);
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .osc-status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .osc-connected {
+            background: #28a745;
+        }
+
+        .osc-disconnected {
+            background: #dc3545;
+        }
+
+        .loop-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 5px;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .loop-active {
+            color: #28a745;
+        }
+
+        .loop-inactive {
+            color: #6c757d;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid #dc3545;
+            color: #dc3545;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            color: #28a745;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 0.5rem 1rem;
+            background: rgba(30, 30, 40, 0.9);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            z-index: 1000;
+        }
+
+        .connection-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .connected {
+            background: #28a745;
+        }
+
+        .disconnected {
+            background: #dc3545;
+        }
+
+        .range-input {
+            width: 100%;
+        }
+
+        .range-value {
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+            color: #8a2be2;
+            font-weight: bold;
+        }
+
+        /* Multi-Bot Selection */
+        .multi-bot-selector {
+            background: rgba(40, 40, 50, 0.8);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 5px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .multi-bot-selector h5 {
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .bot-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .bot-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem;
+        }
+
+        .bot-checkbox input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .bot-checkbox label {
+            margin: 0;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        /* Template Editor */
+        .template-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .template-list {
+            background: rgba(50, 50, 60, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+
+        .template-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(40, 40, 50, 0.6);
+            border-radius: 5px;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+
+        .template-info {
+            flex: 1;
+        }
+
+        .template-name {
+            font-weight: bold;
+            color: #8a2be2;
+            margin-bottom: 0.25rem;
+        }
+
+        .template-content {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            font-family: monospace;
+        }
+
+        .template-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .template-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-btn.edit {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .template-btn.delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .template-editor-form {
+            background: rgba(50, 50, 60, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+
+        .textarea-input {
+            min-height: 80px;
+            font-family: monospace;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+        }
+
+        .placeholder-help {
+            background: rgba(40, 40, 50, 0.6);
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: #b0b0b0;
+        }
+
+        .placeholder-help h6 {
+            color: #8a2be2;
+            margin-bottom: 0.5rem;
+        }
+
+        .placeholder-help code {
+            background: rgba(138, 43, 226, 0.2);
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            color: #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1;
+                min-width: 120px;
+                padding: 0.75rem 1rem;
+            }
+            
+            .tab-content {
+                padding: 1rem;
+            }
+            
+            .instances-container,
+            .osc-controls,
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box">
+            <h2>VRChat Control Login</h2>
+            <div class="error-message" id="loginError"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Benutzername</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Passwort</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">Anmelden</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <div class="header">
+            <div>
+                <h1>VRChat Control Dashboard</h1>
+            </div>
+            <div class="header-info">
+                <button class="logout-btn" onclick="logout()">Abmelden</button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('bot-control')">🤖 Bot Control</button>
+            <button class="tab" onclick="switchTab('osc-control')">📡 OSC Control</button>
+            <button class="tab" onclick="switchTab('template-editor')">📝 Template Editor</button>
+            <button class="tab" onclick="switchTab('osc-monitor')">📊 OSC Monitor</button>
+        </div>
+
+        <!-- Bot Control Tab -->
+        <div id="bot-control" class="tab-content active">
+            <!-- Auto-Start Section -->
+            <div class="system-stats">
+                <h2>🚀 Auto-Start System</h2>
+                <div class="auto-start-controls" style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
+                    <select id="autoStartPreset" style="padding: 0.5rem; background: rgba(50, 50, 60, 0.8); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 5px; color: #e0e0e0;">
+                        <option value="">Individuelle World IDs verwenden</option>
+                    </select>
+                    <button class="btn" onclick="startAutoStart()" id="autoStartBtn" style="background: #28a745; padding: 0.5rem 1rem;">
+                        🚀 Alle Bots starten (3 Min Delay)
+                    </button>
+                    <button class="btn" onclick="stopAutoStart()" id="autoStopBtn" style="background: #dc3545; padding: 0.5rem 1rem; display: none;">
+                        ⏹️ Auto-Start stoppen
+                    </button>
+                </div>
+                <div id="autoStartStatus" style="margin-top: 1rem; padding: 0.75rem; background: rgba(40, 40, 50, 0.6); border-radius: 5px; font-size: 0.875rem; display: none;">
+                    <div id="autoStartText">Auto-Start inaktiv</div>
+                    <div id="autoStartProgress" style="width: 100%; background: rgba(50, 50, 60, 0.8); border-radius: 3px; height: 8px; margin-top: 0.5rem; overflow: hidden;">
+                        <div id="autoStartProgressBar" style="height: 100%; background: #8a2be2; width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Stats -->
+            <div class="system-stats">
+                <h2>System Übersicht</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">RAM Auslastung</div>
+                        <div class="stat-value" id="systemRam">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">CPU Last</div>
+                        <div class="stat-value" id="systemCpu">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Server Uptime</div>
+                        <div class="stat-value" id="systemUptime">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">CPU Kerne</div>
+                        <div class="stat-value" id="systemCores">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Aktive Bots</div>
+                        <div class="stat-value" id="activeBots">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Gesamter Bot-RAM</div>
+                        <div class="stat-value" id="totalBotRam">0 GB</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Instances -->
+            <div class="instances-container" id="instancesContainer"></div>
+        </div>
+
+        <!-- OSC Control Tab -->
+        <div id="osc-control" class="tab-content">
+            <!-- OSC Status -->
+            <div class="osc-section">
+                <h3>📡 OSC-Verbindung</h3>
+                <div class="osc-status" id="oscStatus">
+                    <div class="osc-status-indicator osc-disconnected" id="oscIndicator"></div>
+                    <span id="oscStatusText">Verbindung wird geprüft...</span>
+                </div>
+            </div>
+
+            <!-- Single Bot Chatbox Control -->
+            <div class="osc-section">
+                <h3>💬 Single Bot Chatbox</h3>
+                <div class="osc-controls">
+                    <!-- Single Message -->
+                    <div class="osc-control-group">
+                        <h4>Einzelne Nachricht</h4>
+                        <div class="osc-form">
+                            <select id="chatboxBot" class="osc-input">
+                                <option value="">Bot wählen...</option>
+                            </select>
+                            <textarea id="chatboxMessage" class="osc-input textarea-input" 
+                                      placeholder="Nachricht (max 144 Zeichen)..." maxlength="144"></textarea>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="chatboxImmediate" checked>
+                                <label for="chatboxImmediate">Sofort senden</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="chatboxNotification" checked>
+                                <label for="chatboxNotification">Notification Sound</label>
+                            </div>
+                            <button class="osc-btn" onclick="sendSingleChatboxMessage()">📤 Senden</button>
+                        </div>
+                    </div>
+
+                    <!-- Single Bot Loop -->
+                    <div class="osc-control-group">
+                        <h4>Single Bot Loop</h4>
+                        <div class="osc-form">
+                            <select id="singleLoopBot" class="osc-input">
+                                <option value="">Bot wählen...</option>
+                            </select>
+                            <select id="singleLoopTemplate" class="osc-input">
+                                <option value="">Template wählen...</option>
+                            </select>
+                            <textarea id="singleCustomLoopMessage" class="osc-input textarea-input" 
+                                      placeholder="Custom Message (nur bei Custom Template)..." 
+                                      maxlength="144" style="display: none;"></textarea>
+                            <div class="osc-input-group">
+                                <label class="osc-input">Intervall (Sekunden):</label>
+                                <input type="range" id="singleLoopInterval" class="range-input" 
+                                       min="2" max="60" value="5" 
+                                       oninput="document.getElementById('singleLoopIntervalValue').textContent = this.value">
+                                <span class="range-value" id="singleLoopIntervalValue">5</span>
+                            </div>
+                            <div class="osc-input-group">
+                                <button class="osc-btn success" onclick="startSingleChatboxLoop()">▶️ Start Loop</button>
+                                <button class="osc-btn danger" onclick="stopSingleChatboxLoop()">⏹️ Stop Loop</button>
+                            </div>
+                            <div class="loop-status" id="singleChatboxLoopStatus">
+                                <span class="loop-inactive">Kein Loop aktiv</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-Bot Chatbox Control -->
+            <div class="osc-section">
+                <h3>👥 Multi-Bot Chatbox</h3>
+                <div class="osc-controls">
+                    <!-- Multi-Bot Message -->
+                    <div class="osc-control-group">
+                        <h4>Multi-Bot Nachricht</h4>
+                        <div class="osc-form">
+                            <div class="multi-bot-selector">
+                                <h5>Bots auswählen:</h5>
+                                <div class="bot-checkboxes" id="multiBotCheckboxes"></div>
+                            </div>
+                            <textarea id="multiBotMessage" class="osc-input textarea-input" 
+                                      placeholder="Nachricht (max 144 Zeichen)..." maxlength="144"></textarea>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="multiBotImmediate" checked>
+                                <label for="multiBotImmediate">Sofort senden</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="multiBotNotification" checked>
+                                <label for="multiBotNotification">Notification Sound</label>
+                            </div>
+                            <button class="osc-btn" onclick="sendMultiBotChatboxMessage()">📤 An ausgewählte Bots senden</button>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Bot Loop -->
+                    <div class="osc-control-group">
+                        <h4>Multi-Bot Loop</h4>
+                        <div class="osc-form">
+                            <div class="multi-bot-selector">
+                                <h5>Bots auswählen:</h5>
+                                <div class="bot-checkboxes" id="multiLoopBotCheckboxes"></div>
+                            </div>
+                            <select id="multiLoopTemplate" class="osc-input">
+                                <option value="">Template wählen...</option>
+                            </select>
+                            <textarea id="multiCustomLoopMessage" class="osc-input textarea-input" 
+                                      placeholder="Custom Message (nur bei Custom Template)..." 
+                                      maxlength="144" style="display: none;"></textarea>
+                            <div class="osc-input-group">
+                                <label class="osc-input">Intervall (Sekunden):</label>
+                                <input type="range" id="multiLoopInterval" class="range-input" 
+                                       min="2" max="60" value="5" 
+                                       oninput="document.getElementById('multiLoopIntervalValue').textContent = this.value">
+                                <span class="range-value" id="multiLoopIntervalValue">5</span>
+                            </div>
+                            <div class="osc-input-group">
+                                <button class="osc-btn success" onclick="startMultiBotChatboxLoop()">▶️ Start Multi-Loop</button>
+                                <button class="osc-btn danger" onclick="stopMultiBotChatboxLoop()">⏹️ Stop Multi-Loop</button>
+                            </div>
+                            <div class="loop-status" id="multiChatboxLoopStatus">
+                                <span class="loop-inactive">Kein Loop aktiv</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Editor Tab -->
+        <div id="template-editor" class="tab-content">
+            <div class="osc-section">
+                <h3>📝 Template Editor</h3>
+                <div class="template-grid">
+                    <!-- Template List -->
+                    <div>
+                        <h4 style="color: #8a2be2; margin-bottom: 1rem;">Custom Templates</h4>
+                        <div class="template-list">
+                            <div id="customTemplatesList">
+                                <p style="color: #6c757d; text-align: center; padding: 2rem;">Keine Custom Templates</p>
+                            </div>
+                        </div>
+
+                        <h4 style="color: #8a2be2; margin: 2rem 0 1rem 0;">Built-in Templates</h4>
+                        <div class="template-list">
+                            <div id="builtinTemplatesList">
+                                <p style="color: #6c757d; text-align: center; padding: 2rem;">Lade Templates...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Template Editor Form -->
+                    <div>
+                        <h4 style="color: #8a2be2; margin-bottom: 1rem;">Template erstellen/bearbeiten</h4>
+                        <div class="template-editor-form">
+                            <div class="form-group">
+                                <label for="templateName">Template Name</label>
+                                <input type="text" id="templateName" class="osc-input" 
+                                       placeholder="Eindeutiger Template Name..." maxlength="50">
+                            </div>
+                            <div class="form-group">
+                                <label for="templateDescription">Beschreibung (optional)</label>
+                                <input type="text" id="templateDescription" class="osc-input" 
+                                       placeholder="Kurze Beschreibung..." maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="templateContent">Template Content</label>
+                                <textarea id="templateContent" class="osc-input textarea-input" 
+                                          placeholder="Template Inhalt mit Platzhaltern..." maxlength="200"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button class="osc-btn success" onclick="saveTemplate()">💾 Template speichern</button>
+                                <button class="osc-btn" onclick="clearTemplateForm()" style="margin-left: 0.5rem;">🔄 Formular leeren</button>
+                            </div>
+                            
+                            <div class="placeholder-help">
+                                <h6>Verfügbare Platzhalter:</h6>
+                                <p><code>{time}</code> - Aktuelle Zeit (HH:MM:SS)</p>
+                                <p><code>{date}</code> - Aktuelles Datum (DD.MM.YYYY)</p>
+                                <p><code>{datetime}</code> - Datum und Zeit</p>
+                                <p><code>{bot}</code> - Bot ID (bot1, bot2, etc.)</p>
+                                <p><code>{uptime}</code> - Bot Uptime (wenn verfügbar)</p>
+                                <p><strong>Beispiel:</strong> <code>🕐 {time} - Bot {bot} ist online!</code></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OSC Monitor Tab -->
+        <div id="osc-monitor" class="tab-content">
+            <div class="osc-section">
+                <h3>📊 OSC Status Monitor</h3>
+                <div id="oscMonitorContent">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Chatbox Queue</div>
+                            <div class="stat-value" id="chatboxQueue">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Aktive Chat Loops</div>
+                            <div class="stat-value" id="activeChatLoops">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Custom Templates</div>
+                            <div class="stat-value" id="customTemplateCount">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Bot Ports</div>
+                            <div class="stat-value" id="botPortCount">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="osc-section">
+                <h3>🔄 Aktive Loops</h3>
+                <div id="activeLoopsList">
+                    <p style="color: #6c757d; text-align: center; padding: 2rem;">Keine aktiven Loops</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Status -->
+    <div class="connection-status">
+        <div class="connection-indicator" id="connectionIndicator"></div>
+        <span id="connectionText">Verbinde...</span>
+    </div>
+
+    <script>
+        let ws = null;
+        let authenticated = false;
+        let currentData = null;
+        let worldPresets = {};
+        let oscStatus = null;
+        let currentLoopId = null; // For multi-bot loops
+        let availableTemplates = { builtin: [], custom: [] };
+        let autoStartTimer = null;
+
+        // Login Handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authenticated = true;
+                    showDashboard();
+                    connectWebSocket();
+                    updateOSCStatus();
+                    loadTemplates();
+                } else {
+                    showError('loginError', data.error);
+                }
+            } catch (error) {
+                showError('loginError', 'Verbindungsfehler');
+            }
+        });
+
+        function showError(elementId, message) {
+            const errorEl = document.getElementById(elementId);
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successEl = document.createElement('div');
+            successEl.className = 'success-message';
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+            
+            const activeTab = document.querySelector('.tab-content.active');
+            activeTab.insertBefore(successEl, activeTab.firstChild);
+            
+            setTimeout(() => {
+                successEl.remove();
+            }, 3000);
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            authenticated = false;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            if (ws) {
+                ws.close();
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName.startsWith('osc') || tabName === 'template-editor') {
+                updateOSCStatus();
+                if (tabName === 'template-editor') {
+                    loadTemplates();
+                }
+            }
+        }
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+            ws.onopen = () => {
+                updateConnectionStatus(true);
+            };
+
+            ws.onclose = () => {
+                updateConnectionStatus(false);
+                if (authenticated) {
+                    setTimeout(connectWebSocket, 5000);
+                }
+            };
+
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (message.type === 'update') {
+                    updateDashboard(message.data);
+                }
+            };
+        }
+
+        function updateConnectionStatus(connected) {
+            const indicator = document.getElementById('connectionIndicator');
+            const text = document.getElementById('connectionText');
+            
+            if (connected) {
+                indicator.className = 'connection-indicator connected';
+                text.textContent = 'Verbunden';
+            } else {
+                indicator.className = 'connection-indicator disconnected';
+                text.textContent = 'Getrennt';
+            }
+        }
+
+        function formatUptime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) {
+                return `${days}d ${hours % 24}h`;
+            } else if (hours > 0) {
+                return `${hours}h ${minutes % 60}m`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds % 60}s`;
+            } else {
+                return `${seconds}s`;
+            }
+        }
+
+        function updateDashboard(data) {
+            currentData = data;
+            worldPresets = data.worldPresets || {};
+
+            // Update Auto-Start Presets
+            updateAutoStartPresets();
+
+            // Update System Stats
+            document.getElementById('systemRam').textContent = 
+                `${data.system.ram.used} / ${data.system.ram.total} GB (${data.system.ram.percentage}%)`;
+            document.getElementById('systemCpu').textContent = 
+                `${data.system.cpu.usage}% (Load: ${data.system.cpu.loadAvg})`;
+            document.getElementById('systemUptime').textContent = 
+                formatUptime(data.system.uptime);
+            document.getElementById('systemCores').textContent = 
+                data.system.cpu.cores;
+
+            let activeBots = 0;
+            let totalBotRam = 0;
+
+            for (const instance of Object.values(data.instances)) {
+                if (instance.status === 'running') {
+                    activeBots++;
+                    if (instance.ram && instance.ram !== 'N/A') {
+                        const ramMatch = instance.ram.match(/(\d+\.?\d*)\s*(GB|MB)/);
+                        if (ramMatch) {
+                            const value = parseFloat(ramMatch[1]);
+                            const unit = ramMatch[2];
+                            totalBotRam += unit === 'GB' ? value : value / 1024;
+                        }
+                    }
+                }
+            }
+
+            document.getElementById('activeBots').textContent = activeBots;
+            document.getElementById('totalBotRam').textContent = `${totalBotRam.toFixed(2)} GB`;
+
+            // Update Bot Instances
+            const container = document.getElementById('instancesContainer');
+            container.innerHTML = '';
+
+            for (const [botId, instance] of Object.entries(data.instances)) {
+                const card = createInstanceCard(botId, instance);
+                container.appendChild(card);
+            }
+
+            // Update Bot Selectors
+            updateBotSelectors(data.instances);
+            
+            // Update Auto-Start Status
+            updateAutoStartStatus();
+        }
+
+        function updateBotSelectors(instances) {
+            const selectors = ['chatboxBot', 'singleLoopBot'];
+            
+            selectors.forEach(selectorId => {
+                const selector = document.getElementById(selectorId);
+                if (selector) {
+                    const currentValue = selector.value;
+                    selector.innerHTML = '<option value="">Bot wählen...</option>';
+                    
+                    for (const [botId, instance] of Object.entries(instances)) {
+                        const option = document.createElement('option');
+                        option.value = botId;
+                        option.textContent = `${instance.name} (${instance.status})`;
+                        if (instance.status !== 'running') {
+                            option.disabled = true;
+                            option.textContent += ' - Offline';
+                        }
+                        selector.appendChild(option);
+                    }
+                    
+                    if (currentValue && instances[currentValue]) {
+                        selector.value = currentValue;
+                    }
+                }
+            });
+
+            // Update Multi-Bot Checkboxes
+            updateMultiBotCheckboxes(instances);
+        }
+
+        function updateMultiBotCheckboxes(instances) {
+            const containers = ['multiBotCheckboxes', 'multiLoopBotCheckboxes'];
+            
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '';
+                    
+                    for (const [botId, instance] of Object.entries(instances)) {
+                        const checkbox = document.createElement('div');
+                        checkbox.className = 'bot-checkbox';
+                        
+                        const isRunning = instance.status === 'running';
+                        checkbox.innerHTML = `
+                            <input type="checkbox" id="${containerId}_${botId}" value="${botId}" ${!isRunning ? 'disabled' : ''}>
+                            <label for="${containerId}_${botId}" style="${!isRunning ? 'color: #6c757d' : ''}">
+                                ${instance.name}${!isRunning ? ' (Offline)' : ''}
+                            </label>
+                        `;
+                        
+                        container.appendChild(checkbox);
+                    }
+                }
+            });
+        }
+
+        function createInstanceCard(botId, instance) {
+            const card = document.createElement('div');
+            card.className = 'instance-card';
+            
+            const statusClass = getStatusClass(instance.status);
+            const statusText = getStatusText(instance.status);
+
+            let presetOptions = '<option value="">-- Wähle ein Preset --</option>';
+            for (const [name, worldId] of Object.entries(worldPresets)) {
+                presetOptions += `<option value="${name}">${name}</option>`;
+            }
+            
+            card.innerHTML = `
+                <div class="instance-header">
+                    <div class="instance-name">
+                        ${instance.name}
+                        <span class="status-indicator ${statusClass}"></span>
+                    </div>
+                </div>
+                <div class="instance-info">
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value">${statusText}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">PID</div>
+                        <div class="info-value">${instance.pid || 'N/A'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">RAM</div>
+                        <div class="info-value">${instance.ram || 'N/A'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">CPU</div>
+                        <div class="info-value">${instance.cpu || 'N/A'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Uptime</div>
+                        <div class="info-value">${instance.uptime ? formatUptime(instance.uptime) : 'N/A'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">World ID</div>
+                        <div class="info-value" style="font-size: 0.75rem; word-break: break-all;">
+                            ${instance.worldId || 'Nicht gesetzt'}
+                        </div>
+                    </div>
+                </div>
+                <div class="world-selection">
+                    <div class="world-preset-group">
+                        <select class="world-preset-select" id="preset_${botId}" onchange="applyPreset('${botId}')">
+                            ${presetOptions}
+                        </select>
+                    </div>
+                    <div class="world-input-group">
+                        <input type="text" 
+                               class="world-input" 
+                               id="worldId_${botId}" 
+                               placeholder="wrld_... oder Preset-Name eingeben" 
+                               value="${instance.worldId || ''}"
+                               onblur="saveWorldId('${botId}')"
+                               onkeypress="handleWorldIdKeypress(event, '${botId}')">
+                        <button class="action-btn btn-save" 
+                                onclick="saveWorldId('${botId}')"
+                                title="World ID speichern">
+                            💾
+                        </button>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn btn-start" 
+                            onclick="startInstance('${botId}')"
+                            ${isStartDisabled(instance) ? 'disabled' : ''}>
+                        Start
+                    </button>
+                    <button class="action-btn btn-stop" 
+                            onclick="stopInstance('${botId}')"
+                            ${instance.status !== 'running' ? 'disabled' : ''}>
+                        Stop
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'running': return 'status-running';
+                case 'stopped': return 'status-stopped';
+                case 'error': return 'status-error';
+                case 'starting':
+                case 'waiting_pid': return 'status-running';
+                default: return 'status-unknown';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'running': return 'Läuft';
+                case 'starting': return 'Startet...';
+                case 'waiting_pid': return 'Warte auf VRChat.exe...';
+                case 'stopped': return 'Gestoppt';
+                case 'error': return 'Fehler';
+                default: return 'Unbekannt';
+            }
+        }
+
+        function isStartDisabled(instance) {
+            return instance.status === 'running' || 
+                   instance.status === 'starting' || 
+                   instance.status === 'waiting_pid';
+        }
+
+        // Bot Control Functions (unchanged)
+        function applyPreset(botId) {
+            const presetSelect = document.getElementById(`preset_${botId}`);
+            const worldInput = document.getElementById(`worldId_${botId}`);
+            
+            if (presetSelect.value) {
+                worldInput.value = presetSelect.value;
+                saveWorldId(botId);
+            }
+        }
+
+        function handleWorldIdKeypress(event, botId) {
+            if (event.key === 'Enter') {
+                saveWorldId(botId);
+            }
+        }
+
+        async function saveWorldId(botId) {
+            const worldIdInput = document.getElementById(`worldId_${botId}`);
+            const worldId = worldIdInput.value.trim();
+            
+            if (!worldId) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/instance/${botId}/world`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ worldId })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    alert(`Fehler: ${data.error}`);
+                    worldIdInput.value = currentData.instances[botId].worldId || '';
+                } else {
+                    const presetSelect = document.getElementById(`preset_${botId}`);
+                    if (presetSelect) {
+                        presetSelect.value = '';
+                    }
+                }
+            } catch (error) {
+                alert('Fehler beim Speichern der World ID');
+                worldIdInput.value = currentData.instances[botId].worldId || '';
+            }
+        }
+
+        async function startInstance(botId) {
+            const worldIdInput = document.getElementById(`worldId_${botId}`);
+            const worldId = worldIdInput.value.trim();
+            
+            if (!worldId) {
+                alert('Bitte gib eine World ID oder wähle ein Preset');
+                return;
+            }
+
+            // Prüfe Rate-Limit
+            try {
+                const statusResponse = await fetch('/api/auto-start/status');
+                if (statusResponse.ok) {
+                    const status = await statusResponse.json();
+                    const timeSinceLastStart = status.timeSinceLastStart;
+                    const rateLimit = status.rateLimit || 180000; // 3 Minuten
+                    
+                    if (status.lastStartTime > 0 && timeSinceLastStart < rateLimit) {
+                        const remainingSeconds = Math.ceil((rateLimit - timeSinceLastStart) / 1000);
+                        const minutes = Math.floor(remainingSeconds / 60);
+                        const seconds = remainingSeconds % 60;
+                        
+                        if (!confirm(`⚠️ Rate-Limit aktiv!\n\nLetzter Bot-Start vor ${Math.floor(timeSinceLastStart / 1000)} Sekunden.\nEmpfohlene Wartezeit: ${minutes}m ${seconds}s\n\nTrotzdem fortfahren?`)) {
+                            return;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Rate-Limit Check Fehler:', error);
+            }
+
+            try {
+                const response = await fetch(`/api/instance/${botId}/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ worldId })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    alert(`Fehler: ${data.error}`);
+                } else {
+                    showSuccess(`${currentData.instances[botId].name} wird gestartet`);
+                }
+            } catch (error) {
+                alert('Fehler beim Starten der Instanz');
+            }
+        }
+
+        async function stopInstance(botId) {
+            if (!confirm(`Möchtest du ${currentData.instances[botId].name} wirklich stoppen?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/instance/${botId}/stop`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Stoppen der Instanz');
+            }
+        }
+
+        // OSC Functions
+        async function updateOSCStatus() {
+            try {
+                const response = await fetch('/api/osc/status');
+                if (response.ok) {
+                    oscStatus = await response.json();
+                    updateOSCUI();
+                }
+            } catch (error) {
+                console.error('OSC Status Fehler:', error);
+            }
+        }
+
+        function updateOSCUI() {
+            if (!oscStatus) return;
+
+            const indicator = document.getElementById('oscIndicator');
+            const statusText = document.getElementById('oscStatusText');
+            
+            if (oscStatus.connected) {
+                indicator.className = 'osc-status-indicator osc-connected';
+                statusText.textContent = `Verbunden (Multi-Bot OSC aktiv)`;
+            } else {
+                indicator.className = 'osc-status-indicator osc-disconnected';
+                statusText.textContent = 'Nicht verbunden';
+            }
+
+            if (document.getElementById('chatboxQueue')) {
+                document.getElementById('chatboxQueue').textContent = oscStatus.chatboxQueue || 0;
+                document.getElementById('activeChatLoops').textContent = oscStatus.activeChatLoops || 0;
+                document.getElementById('customTemplateCount').textContent = oscStatus.totalCustomTemplates || 0;
+                document.getElementById('botPortCount').textContent = Object.keys(oscStatus.botPorts || {}).length;
+            }
+        }
+
+        // Single Bot OSC Functions
+        async function sendSingleChatboxMessage() {
+            const botId = document.getElementById('chatboxBot').value;
+            const message = document.getElementById('chatboxMessage').value;
+            const immediate = document.getElementById('chatboxImmediate').checked;
+            const notification = document.getElementById('chatboxNotification').checked;
+
+            if (!botId || !message) {
+                alert('Bitte Bot und Nachricht auswählen');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/osc/chatbox/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ botId, message, immediate, notification })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Chatbox-Nachricht gesendet');
+                    document.getElementById('chatboxMessage').value = '';
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Senden der Chatbox-Nachricht');
+            }
+        }
+
+        // Multi-Bot OSC Functions
+        function getSelectedBots(containerPrefix) {
+            const checkboxes = document.querySelectorAll(`#${containerPrefix} input[type="checkbox"]:checked:not(:disabled)`);
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        async function sendMultiBotChatboxMessage() {
+            const botIds = getSelectedBots('multiBotCheckboxes');
+            const message = document.getElementById('multiBotMessage').value;
+            const immediate = document.getElementById('multiBotImmediate').checked;
+            const notification = document.getElementById('multiBotNotification').checked;
+
+            if (botIds.length === 0) {
+                alert('Bitte mindestens einen Bot auswählen');
+                return;
+            }
+
+            if (!message) {
+                alert('Bitte eine Nachricht eingeben');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/osc/chatbox/send/multi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ botIds, message, immediate, notification })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(`Multi-Bot Nachricht an ${botIds.length} Bot(s) gesendet`);
+                    document.getElementById('multiBotMessage').value = '';
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Senden der Multi-Bot Nachricht');
+            }
+        }
+
+        // Template handling
+        document.getElementById('singleLoopTemplate').addEventListener('change', function() {
+            const customInput = document.getElementById('singleCustomLoopMessage');
+            if (this.value === 'custom') {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+            }
+        });
+
+        document.getElementById('multiLoopTemplate').addEventListener('change', function() {
+            const customInput = document.getElementById('multiCustomLoopMessage');
+            if (this.value === 'custom') {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+            }
+        });
+
+        // Single Bot Loop Functions
+        async function startSingleChatboxLoop() {
+            const botId = document.getElementById('singleLoopBot').value;
+            const template = document.getElementById('singleLoopTemplate').value;
+            const interval = parseInt(document.getElementById('singleLoopInterval').value) * 1000;
+            const customMessage = document.getElementById('singleCustomLoopMessage').value;
+
+            if (!botId || !template) {
+                alert('Bitte Bot und Template auswählen');
+                return;
+            }
+
+            if (template === 'custom' && !customMessage) {
+                alert('Bitte Custom Message eingeben');
+                return;
+            }
+
+            try {
+                const body = { botId, template, interval };
+                if (template === 'custom') {
+                    body.customMessage = customMessage;
+                }
+
+                const response = await fetch('/api/osc/chatbox/loop/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Single Bot Chatbox-Loop gestartet');
+                    updateSingleChatboxLoopStatus(botId, true, template);
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Starten des Chatbox-Loops');
+            }
+        }
+
+        async function stopSingleChatboxLoop() {
+            const botId = document.getElementById('singleLoopBot').value;
+
+            if (!botId) {
+                alert('Bitte Bot auswählen');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/osc/chatbox/loop/stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ botId })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Single Bot Chatbox-Loop gestoppt');
+                    updateSingleChatboxLoopStatus(botId, false);
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Stoppen des Chatbox-Loops');
+            }
+        }
+
+        function updateSingleChatboxLoopStatus(botId, active, template = '') {
+            const statusEl = document.getElementById('singleChatboxLoopStatus');
+            if (active) {
+                statusEl.innerHTML = `<span class="loop-active">Loop aktiv: ${template} für ${botId}</span>`;
+            } else {
+                statusEl.innerHTML = `<span class="loop-inactive">Kein Loop aktiv</span>`;
+            }
+        }
+
+        // Multi-Bot Loop Functions
+        async function startMultiBotChatboxLoop() {
+            const botIds = getSelectedBots('multiLoopBotCheckboxes');
+            const template = document.getElementById('multiLoopTemplate').value;
+            const interval = parseInt(document.getElementById('multiLoopInterval').value) * 1000;
+            const customMessage = document.getElementById('multiCustomLoopMessage').value;
+
+            if (botIds.length === 0) {
+                alert('Bitte mindestens einen Bot auswählen');
+                return;
+            }
+
+            if (!template) {
+                alert('Bitte Template auswählen');
+                return;
+            }
+
+            if (template === 'custom' && !customMessage) {
+                alert('Bitte Custom Message eingeben');
+                return;
+            }
+
+            try {
+                const body = { botIds, template, interval };
+                if (template === 'custom') {
+                    body.customMessage = customMessage;
+                }
+
+                const response = await fetch('/api/osc/chatbox/loop/start/multi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(`Multi-Bot Chatbox-Loop für ${botIds.length} Bot(s) gestartet`);
+                    currentLoopId = data.loopId;
+                    updateMultiChatboxLoopStatus(botIds, true, template);
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Starten des Multi-Bot Chatbox-Loops');
+            }
+        }
+
+        async function stopMultiBotChatboxLoop() {
+            if (!currentLoopId) {
+                alert('Kein aktiver Multi-Bot Loop gefunden');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/osc/chatbox/loop/stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ loopId: currentLoopId })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Multi-Bot Chatbox-Loop gestoppt');
+                    currentLoopId = null;
+                    updateMultiChatboxLoopStatus([], false);
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Stoppen des Multi-Bot Chatbox-Loops');
+            }
+        }
+
+        function updateMultiChatboxLoopStatus(botIds, active, template = '') {
+            const statusEl = document.getElementById('multiChatboxLoopStatus');
+            if (active) {
+                statusEl.innerHTML = `<span class="loop-active">Multi-Loop aktiv: ${template} für [${botIds.join(', ')}]</span>`;
+            } else {
+                statusEl.innerHTML = `<span class="loop-inactive">Kein Loop aktiv</span>`;
+            }
+        }
+
+        // Template Management Functions
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/api/osc/templates');
+                if (response.ok) {
+                    const data = await response.json();
+                    availableTemplates = data;
+                    updateTemplateSelectors();
+                    updateTemplateDisplay();
+                }
+            } catch (error) {
+                console.error('Template Load Fehler:', error);
+            }
+        }
+
+        function updateTemplateSelectors() {
+            const selectors = ['singleLoopTemplate', 'multiLoopTemplate'];
+            
+            selectors.forEach(selectorId => {
+                const selector = document.getElementById(selectorId);
+                if (selector) {
+                    const currentValue = selector.value;
+                    selector.innerHTML = '<option value="">Template wählen...</option>';
+                    
+                    // Built-in Templates
+                    if (availableTemplates.builtin) {
+                        availableTemplates.builtin.forEach(template => {
+                            const option = document.createElement('option');
+                            option.value = template;
+                            option.textContent = `📋 ${template} (Built-in)`;
+                            selector.appendChild(option);
+                        });
+                    }
+                    
+                    // Custom Templates
+                    if (availableTemplates.custom) {
+                        availableTemplates.custom.forEach(template => {
+                            const option = document.createElement('option');
+                            option.value = template.name;
+                            option.textContent = `✏️ ${template.name} (Custom)`;
+                            selector.appendChild(option);
+                        });
+                    }
+                    
+                    // Custom option
+                    const customOption = document.createElement('option');
+                    customOption.value = 'custom';
+                    customOption.textContent = '✏️ Custom Message';
+                    selector.appendChild(customOption);
+                    
+                    if (currentValue) {
+                        selector.value = currentValue;
+                    }
+                }
+            });
+        }
+
+        function updateTemplateDisplay() {
+            // Update Built-in Templates Display
+            const builtinContainer = document.getElementById('builtinTemplatesList');
+            if (builtinContainer && availableTemplates.builtin) {
+                builtinContainer.innerHTML = '';
+                
+                availableTemplates.builtin.forEach(template => {
+                    const item = document.createElement('div');
+                    item.className = 'template-item';
+                    item.innerHTML = `
+                        <div class="template-info">
+                            <div class="template-name">📋 ${template}</div>
+                            <div class="template-content">Built-in Template</div>
+                        </div>
+                    `;
+                    builtinContainer.appendChild(item);
+                });
+            }
+            
+            // Update Custom Templates Display
+            const customContainer = document.getElementById('customTemplatesList');
+            if (customContainer) {
+                if (!availableTemplates.custom || availableTemplates.custom.length === 0) {
+                    customContainer.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 2rem;">Keine Custom Templates</p>';
+                } else {
+                    customContainer.innerHTML = '';
+                    
+                    availableTemplates.custom.forEach(template => {
+                        const item = document.createElement('div');
+                        item.className = 'template-item';
+                        item.innerHTML = `
+                            <div class="template-info">
+                                <div class="template-name">✏️ ${template.name}</div>
+                                <div class="template-content">${template.content}</div>
+                                ${template.description ? `<div style="font-size: 0.75rem; color: #8a2be2; margin-top: 0.25rem;">${template.description}</div>` : ''}
+                            </div>
+                            <div class="template-actions">
+                                <button class="template-btn edit" onclick="editTemplate('${template.name}')">✏️</button>
+                                <button class="template-btn delete" onclick="deleteTemplate('${template.name}')">🗑️</button>
+                            </div>
+                        `;
+                        customContainer.appendChild(item);
+                    });
+                }
+            }
+        }
+
+        async function saveTemplate() {
+            const name = document.getElementById('templateName').value.trim();
+            const content = document.getElementById('templateContent').value.trim();
+            const description = document.getElementById('templateDescription').value.trim();
+
+            if (!name || !content) {
+                alert('Name und Content sind erforderlich');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/osc/templates/custom', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, content, description })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Template gespeichert');
+                    clearTemplateForm();
+                    loadTemplates();
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Speichern des Templates');
+            }
+        }
+
+        async function deleteTemplate(name) {
+            if (!confirm(`Template "${name}" wirklich löschen?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/osc/templates/custom/${encodeURIComponent(name)}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Template gelöscht');
+                    loadTemplates();
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Löschen des Templates');
+            }
+        }
+
+        function editTemplate(name) {
+            const template = availableTemplates.custom.find(t => t.name === name);
+            if (template) {
+                document.getElementById('templateName').value = template.name;
+                document.getElementById('templateContent').value = template.content;
+                document.getElementById('templateDescription').value = template.description || '';
+            }
+        }
+
+        function clearTemplateForm() {
+            document.getElementById('templateName').value = '';
+            document.getElementById('templateContent').value = '';
+            document.getElementById('templateDescription').value = '';
+        }
+
+        // Refresh OSC status every 5 seconds
+        setInterval(() => {
+            if (authenticated) {
+                updateOSCStatus();
+            }
+        }, 5000);
+
+        // Auto-Start Functions
+        function updateAutoStartPresets() {
+            const presetSelect = document.getElementById('autoStartPreset');
+            if (presetSelect && worldPresets) {
+                const currentValue = presetSelect.value;
+                presetSelect.innerHTML = '<option value="">Individuelle World IDs verwenden</option>';
+                
+                for (const [name, worldId] of Object.entries(worldPresets)) {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = `${name} (${worldId})`;
+                    presetSelect.appendChild(option);
+                }
+                
+                if (currentValue) {
+                    presetSelect.value = currentValue;
+                }
+            }
+        }
+
+        async function startAutoStart() {
+            const preset = document.getElementById('autoStartPreset').value;
+            
+            if (!confirm(`Alle gestoppten Bots automatisch starten?${preset ? `\nWorld Preset: ${preset}` : '\nVerwendet individuelle World IDs'}\n\nRat-Limit: 3 Minuten zwischen jedem Bot`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auto-start/all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ worldPreset: preset || undefined })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(`Auto-Start gestartet für ${data.totalBots} Bot(s)`);
+                    updateAutoStartUI(true);
+                    startAutoStartTimer();
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Starten des Auto-Start Systems');
+            }
+        }
+
+        async function stopAutoStart() {
+            if (!confirm('Auto-Start wirklich stoppen? Verbleibende Bots werden nicht gestartet.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auto-start/stop', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(`Auto-Start gestoppt. ${data.stoppedBots} Bot(s) übersprungen.`);
+                    updateAutoStartUI(false);
+                    stopAutoStartTimer();
+                } else {
+                    alert(`Fehler: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Fehler beim Stoppen des Auto-Start Systems');
+            }
+        }
+
+        async function updateAutoStartStatus() {
+            try {
+                const response = await fetch('/api/auto-start/status');
+                if (response.ok) {
+                    const status = await response.json();
+                    updateAutoStartDisplay(status);
+                }
+            } catch (error) {
+                console.error('Auto-Start Status Fehler:', error);
+            }
+        }
+
+        function updateAutoStartDisplay(status) {
+            const statusDiv = document.getElementById('autoStartStatus');
+            const textDiv = document.getElementById('autoStartText');
+            const progressBar = document.getElementById('autoStartProgressBar');
+            
+            if (status.active) {
+                statusDiv.style.display = 'block';
+                textDiv.textContent = `Auto-Start aktiv: ${status.remaining} Bot(s) verbleibend`;
+                
+                if (status.remaining > 0) {
+                    const totalTime = 180000; // 3 Minuten in ms
+                    const elapsed = status.timeSinceLastStart;
+                    const progress = Math.min((elapsed / totalTime) * 100, 100);
+                    progressBar.style.width = `${progress}%`;
+                    
+                    const remainingSeconds = Math.max(0, Math.ceil((totalTime - elapsed) / 1000));
+                    if (remainingSeconds > 0) {
+                        textDiv.textContent += ` - Nächster Bot in ${Math.ceil(remainingSeconds / 60)} Min ${remainingSeconds % 60} Sek`;
+                    }
+                } else {
+                    progressBar.style.width = '100%';
+                }
+                
+                updateAutoStartUI(true);
+            } else {
+                statusDiv.style.display = 'none';
+                updateAutoStartUI(false);
+                stopAutoStartTimer();
+            }
+        }
+
+        function updateAutoStartUI(active) {
+            const startBtn = document.getElementById('autoStartBtn');
+            const stopBtn = document.getElementById('autoStopBtn');
+            
+            if (active) {
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+            } else {
+                startBtn.style.display = 'inline-block';
+                stopBtn.style.display = 'none';
+            }
+        }
+
+        function startAutoStartTimer() {
+            if (autoStartTimer) return;
+            
+            autoStartTimer = setInterval(() => {
+                updateAutoStartStatus();
+            }, 1000); // Update every second for smooth progress
+        }
+
+        function stopAutoStartTimer() {
+            if (autoStartTimer) {
+                clearInterval(autoStartTimer);
+                autoStartTimer = null;
+            }
+        }
+
+        // Initial load if already authenticated
+        fetch('/api/status')
+            .then(response => {
+                if (response.ok) {
+                    authenticated = true;
+                    showDashboard();
+                    connectWebSocket();
+                    updateOSCStatus();
+                    loadTemplates();
+                    return response.json();
+                }
+            })
+            .then(data => {
+                if (data) {
+                    updateDashboard(data);
+                }
+            })
+            .catch(() => {});
+    </script>
+</body>
+</html>
